@@ -1,0 +1,43 @@
+VERSION "1.0"
+
+NS_ :
+    NS_DESC_
+    CM_
+    BA_DEF_
+    BA_
+    VAL_
+    CAT_DEF_
+    CAT_
+    FILTER
+    SIG_VALTYPE_
+    EV_DATA_
+    ENVVAR_DATA_
+
+BS_ :
+BU_: ECU_7E8 ECU_38C ECU_74B
+BO_ 2024 TEMPERATURA: 8 ECU_7E8
+    SG_ Temperatura1 : 32|8@1+ (1,-40) [-40|215] "C" ECU_7E8
+    SG_ Temperatura2 : 40|8@1+ (1,-40) [-40|215] "C" ECU_7E8
+    SG_ Temperatura3 : 48|8@1+ (1,-40) [-40|215] "C" ECU_7E8
+    SG_ Temperatura4 : 56|8@1+ (1,-40) [-40|215] "C" ECU_7E8
+
+BO_ 908 TENSAO: 8 ECU_38C
+    SG_ Tensao : 16|16@1+ (0.01,0) [0|500] "V" ECU_38C
+
+BO_ 257 throttle: 8 x74B
+    SG_ PedalAcelerador : 32|16@1+ (1,0) [0|255] "%" ECU_74B
+
+BO_ 258 brake_input: 8 x74B
+    SG_ PedalFreio : 32|16@1+ (1,0) [0|255] "%" ECU_74B
+
+BO_ 5 fuel: 8 x789
+    SG_ SOC_Simples : 32|8@1+ (1,0) [0|100] "%" ECU_789
+
+BO_ 1930 SOC_Actual: 8 x789
+    SG_ SOC_Actual : 32|16@1+ (0.01,0) [0|100] "%" ECU_789
+
+BO_ 37 vel: 8 x74B
+    SG_ Velocity : 32|16@1+ (0.1, 0) [0|300] "km/h" ECU_74B
+
+BO_ 261 outputTorque1: 8 x74B   
+    SG_ TorqueRear: 32|16@1+ (0.1, -500) [-10000|10000] "N/m" ECU_74B
