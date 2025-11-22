@@ -1,0 +1,46 @@
+[project]
+name = "cansimulation"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "argparse-addons>=0.12.0",
+    "beamngpy>=1.34.1",
+    "bitstruct>=8.21.0",
+    "cantools>=41.0.1",
+    "certifi>=2025.11.12",
+    "charset-normalizer>=3.4.4",
+    "contourpy>=1.3.2",
+    "crccheck>=1.3.1",
+    "cycler>=0.12.1",
+    "diskcache>=5.6.3",
+    "docker>=7.1.0",
+    "fonttools>=4.60.1",
+    "idna>=3.11",
+    "jinja2>=3.1.6",
+    "kiwisolver>=1.4.9",
+    "markupsafe>=3.0.3",
+    "matplotlib>=3.10.7",
+    "msgpack>=1.1.2",
+    "numpy>=2.2.6",
+    "opencv-python>=4.11.0.86",
+    "packaging>=25.0",
+    "pandas>=2.3.3",
+    "pillow>=12.0.0",
+    "pip>=25.3",
+    "pyparsing>=3.2.5",
+    "python-can>=4.6.1",
+    "python-dateutil>=2.9.0.post0",
+    "pytz>=2025.2",
+    "requests>=2.32.5",
+    "scipy>=1.15.3",
+    "seaborn>=0.13.2",
+    "setuptools>=80.9.0",
+    "six>=1.17.0",
+    "textparser>=0.24.0",
+    "typing-extensions>=4.15.0",
+    "tzdata>=2025.2",
+    "urllib3>=2.5.0",
+    "wrapt>=1.17.3",
+]
