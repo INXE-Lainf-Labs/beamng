@@ -7,8 +7,9 @@ import csv
 import cv2
 import docker
 from subprocess import Popen, DEVNULL
-from random import sample
+from random import sample, seed
 from beamngpy import ScenarioObject
+from pprint import pprint
 
 def set_bng_container_up():
     """
@@ -18,13 +19,13 @@ def set_bng_container_up():
     # O bloco dentro do try especifica quando existe um conteiner do bng em execução.
     client = docker.from_env()
     try:
-        client.containers.get("beamng-erick")
+        client.containers.get("beamng-ubuntu22")
         print('\033[31m[ERRO]\033[0m   Já existe uma instância de simulação. Finalizando...')
         return False
     except docker.errors.NotFound:
         # Caso não exista, levanta o conteiner
         print('\033[34m[INFO]\033[0m   Levantando contêiner do bng...')
-        process = Popen(['docker', 'compose', 'up', 'beamng-erick'], cwd='/opt/BeamNG/BeamNG.tech.v0.36.4.0/tech/docker', stdout=DEVNULL, stderr=DEVNULL)
+        process = Popen(['docker', 'compose', 'up', 'beamng-ubuntu22'], cwd='/opt/BeamNG/BeamNG.tech.v0.37.6.0/tech/docker', stdout=DEVNULL, stderr=DEVNULL)
         
         # TODO: substituir pela verificação de status do contêiner 
         sleep(10)
@@ -37,11 +38,11 @@ def set_bng_container_down():
     """
     client = docker.from_env()
     try:
-        client.containers.get("beamng-erick")
+        client.containers.get("beamng-ubuntu22")
         print('\033[34m[INFO]\033[0m   Finalizando o contêiner')
-        Popen(['docker', 'kill', 'beamng-erick'], stdout=DEVNULL, stderr=DEVNULL)
+        Popen(['docker', 'kill', 'beamng-ubuntu22'], stdout=DEVNULL, stderr=DEVNULL)
         sleep(10)
-        Popen(['docker', 'rm', 'beamng-erick'], stdout=DEVNULL, stderr=DEVNULL)
+        Popen(['docker', 'rm', 'beamng-ubuntu22'], stdout=DEVNULL, stderr=DEVNULL)
     except docker.errors.NotFound:
         print('\033[31m[ERRO]\033[0m   Não existe uma instância da simulação. Finalizando...')
 
@@ -87,7 +88,7 @@ def simulation_loop(bng, sim_name, vehicle, camera, features, length, can_parser
             for i in range(1, length):
 
                 # Avança 50 passos da simulação
-                bng.step(15)
+                #bng.step(15)
 
                 leitura = []
                 leitura_can = []
@@ -128,13 +129,13 @@ def simulation_loop(bng, sim_name, vehicle, camera, features, length, can_parser
                 # Incrementa a leitura com os valores de sensor do carro
                 data = vehicle.sensors['electrics'].data
                 valores = []
-                for i in features.keys():
-                    if i == 'outputTorque1':
+                for j in features.keys():
+                    if j == 'outputTorque1':
                         valores.append(powertrain.poll()['rearMotor']['outputTorque1'])
-                    elif i == 'vel':
+                    elif j == 'vel':
                         valores.append(vehicle.state['vel'])
                     else:
-                        valores.append(data[i])
+                        valores.append(data[j])
                 leitura.extend(valores)
 
                 # Faz o tratamento específico da feature
@@ -164,23 +165,39 @@ def get_coordinates_list(scenario, sim_name):
         Lista com o nome dos waypoints do trajeto
     """
     
-    df = pd.read_csv(f'/opt/BeamNG/BeamNG.tech.v0.36.4.0/CANSimulation/data/{sim_name}/readable.csv', delimiter=';')
+    df = pd.read_csv(f'/opt/BeamNG/BeamNG.tech.v0.37.6.0/CANSimulation/data/{sim_name}/readable.csv', delimiter=';')
     waypoints = []
     
-    for index, row in df.iterrows():
+    # for index, row in df.iterrows():
         
-        name = f'tw_{index}'
+    #     name = f'tw_{index}'
         
-        so = ScenarioObject(
-            oid='BeamNGWaypoint',
-            name=name,
-            otype='BeamNGWaypoint',
-            pos=(row['posX'], row['posY'], row['posZ']),
-            scale=1,
-            orientation=(0, 0, 0)
-        )
+    #     so = ScenarioObject(
+    #         oid=name,
+    #         name=name,
+    #         otype='BeamNGWaypoint',
+    #         pos=(row['posX'], row['posY'], row['posZ']),
+    #         scale=1,
+    #         orientation=(0, 0, 0)
+    #     )
         
-        scenario.add_object(so)
-        waypoints.append(name)
+    #     scenario.add_object(so)
+    #     waypoints.append(name)
         
-    return waypoints
+    pprint(scenario.find_waypoints())
+
+    waypoints = scenario.find_waypoints()
+
+    seed(42)
+
+    pontos_escolhidos = sample(waypoints, k=5)
+    pprint(pontos_escolhidos)
+
+    pontos_escolhidos = [ponto.name for ponto in pontos_escolhidos]
+
+    pprint(pontos_escolhidos)
+
+    pontos_escolhidos.append(pontos_escolhidos[0])
+
+
+    return pontos_escolhidos

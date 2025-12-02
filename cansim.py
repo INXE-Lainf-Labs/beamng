@@ -32,12 +32,17 @@ def main(report, sim_name):
     can_parser = CANParser(dbc_path)
 
     # Configurando o cenário
-    scenario = Scenario("west_coast_usa", "vehicle logging")
+    # scenario = Scenario("west_coast_usa", "vehicle logging")
+    scenario = Scenario("hirochi_raceway", "ai_waypoints")
+    
     vehicle = Vehicle("ego_vehicle", model="sbr", license="LAINF", part_config='vehicles/sbr/electric_300.pc')
-    scenario.add_vehicle(
-        vehicle,
-        pos=(-769.1, 400.8, 142.8), rot_quat=(0.0173, -0.0019, -0.6354, 0.7720)
-    )
+    # scenario.add_vehicle(
+    #     vehicle,
+    #     pos=(-769.1, 400.8, 142.8), rot_quat=(0.0173, -0.0019, -0.6354, 0.7720)
+    # )
+
+    scenario.add_vehicle(vehicle, pos=(-408.5, 260.2, 25.22), rot_quat=(-0.006664, -0.002505, -0.2799, 0.96))
+
     scenario.make(beamng)
     print("\033[34m[INFO]\033[0m   Cenário construído")
 
@@ -48,7 +53,7 @@ def main(report, sim_name):
     print("\033[34m[INFO]\033[0m   Cenário iniciado")
     
     # Pausa a simulação, para ser controlada pelos steps
-    beamng.pause()    
+    #beamng.pause()    
 
     # Instanciando APIs
     trafficApi = TrafficApi(beamng)
@@ -60,7 +65,11 @@ def main(report, sim_name):
     
     if sim_name != '':
         waypoints = get_coordinates_list(scenario, sim_name)
-        vehicle.ai.drive_using_waypoints(waypoints)
+        vehicle.ai.drive_using_waypoints(['hr_bridge3', 'hr_bridge6', 'derby_wp9', 'derby_wp19', 'hr_start', 'hr_bridge3'],
+        drive_in_lane=True,
+        avoid_cars=True,
+        no_of_laps=1,
+        route_speed=100.0/3.6)
     else:
         vehicle.ai.set_mode('traffic')
 
@@ -120,4 +129,4 @@ def main(report, sim_name):
     set_bng_container_down()
 
 if __name__ == "__main__":
-    main(True, 's_20251113_0956')
+    main(True, 's_20251202_0923')
