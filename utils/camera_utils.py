@@ -29,8 +29,8 @@ def generate_video(sim_name):
     
     alt, lar, _ = imgs[0].shape
 
-    video = cv2.VideoWriter(f"./data/{sim_name}/recording.avi",
-                        cv2.VideoWriter_fourcc(*"XVID"),  # codec
+    video = cv2.VideoWriter(f"./data/{sim_name}/recording.mp4",
+                        cv2.VideoWriter_fourcc(*"mp4v"),  # codec
                         10,                              # fps
                         (lar, alt))
     

@@ -6,6 +6,7 @@ import numpy as np
 import csv
 import cv2
 import docker
+import json
 from subprocess import Popen, DEVNULL
 from random import sample, seed
 from beamngpy import ScenarioObject
@@ -97,7 +98,7 @@ def simulation_loop(bng, sim_name, vehicle, camera, features, length, can_parser
                 vehicle.sensors.poll()
         
                 # Captura um frame para montar saída
-                if i % 100 == 0:
+                if i % 10 == 0:
                     frame = camera.poll_raw()
 
                     arr = np.frombuffer(frame['colour'], dtype=np.uint8)
@@ -155,49 +156,27 @@ def simulation_loop(bng, sim_name, vehicle, camera, features, length, can_parser
         except KeyboardInterrupt:
             print('\033[33m[WARN]\033[0m   Interrompendo simulação')
 
-def get_coordinates_list(scenario, sim_name):
+def get_coordinates_list():
     """
     Função responsável por retornar o conjunto de coordenadas em que o veículo irá trafegar
     Args:
-        scenario: Objeto cenário da simulação
-        sim_name: Nome da simulação
+        coordinates: coordenadas dos pontos
     Returns:
         Lista com o nome dos waypoints do trajeto
     """
+        
+    wps = []
     
-    df = pd.read_csv(f'/opt/BeamNG/BeamNG.tech.v0.37.6.0/CANSimulation/data/{sim_name}/readable.csv', delimiter=';')
-    waypoints = []
-    
-    # for index, row in df.iterrows():
-        
-    #     name = f'tw_{index}'
-        
-    #     so = ScenarioObject(
-    #         oid=name,
-    #         name=name,
-    #         otype='BeamNGWaypoint',
-    #         pos=(row['posX'], row['posY'], row['posZ']),
-    #         scale=1,
-    #         orientation=(0, 0, 0)
-    #     )
-        
-    #     scenario.add_object(so)
-    #     waypoints.append(name)
-        
-    pprint(scenario.find_waypoints())
-
-    waypoints = scenario.find_waypoints()
+    with open("wps/west_coast_usa.ndjson", "r", encoding="utf-8") as f:
+        for linha in f:
+            wps.append(json.loads(linha))
 
     seed(42)
 
-    pontos_escolhidos = sample(waypoints, k=5)
-    pprint(pontos_escolhidos)
+    amostra = sample(wps, k=5)
 
-    pontos_escolhidos = [ponto.name for ponto in pontos_escolhidos]
+    amostra = [w['name'] for w in amostra]
 
-    pprint(pontos_escolhidos)
+    print(amostra)
 
-    pontos_escolhidos.append(pontos_escolhidos[0])
-
-
-    return pontos_escolhidos
+    return amostra
