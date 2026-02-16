@@ -85,11 +85,14 @@ def simulation_loop(bng, sim_name, vehicle, camera, features, length, can_parser
         try:
             print('\033[34m[INFO]\033[0m   Coletando dados')
             
+            patience = 0
+
             # Looping da simulação
             for i in range(1, length):
 
-                # Avança 50 passos da simulação
-                #bng.step(15)
+                if patience > 300:
+                    print('\033[34m[INFO]\033[0m   Carro encerrou o trajeto. Finalizando...')
+                    break
 
                 leitura = []
                 leitura_can = []
@@ -142,6 +145,13 @@ def simulation_loop(bng, sim_name, vehicle, camera, features, length, can_parser
                 # Faz o tratamento específico da feature
                 for i, col in enumerate(features.keys()):
                     treated_value = features[col](valores[i])
+
+                    if col == "vel":
+                        if int(treated_value) == 0:
+                            patience += 1
+                        else:
+                            patience = 0
+
                     log_line = can_parser.log(col, treated_value)
                     leitura_can.append(log_line)
                     can_debbug_file.write(f'{log_line} -> {col} : {treated_value}\n')
@@ -156,7 +166,7 @@ def simulation_loop(bng, sim_name, vehicle, camera, features, length, can_parser
         except KeyboardInterrupt:
             print('\033[33m[WARN]\033[0m   Interrompendo simulação')
 
-def get_coordinates_list():
+def get_waypoints_list():
     """
     Função responsável por retornar o conjunto de coordenadas em que o veículo irá trafegar
     Args:
@@ -180,3 +190,26 @@ def get_coordinates_list():
     print(amostra)
 
     return amostra
+
+def get_coordinates_list():
+    """
+    Função responsável por retornar o conjunto de coordenadas em que o veículo irá trafegar
+    Returns:
+        Lista com as coordenadas dos waypoints do trajeto
+    """
+    waypoints = []
+    with open("wps/west_coast_usa.ndjson", "r", encoding="utf-8") as f:
+        for line in f:
+            waypoints.append(json.loads(line))
+
+    seed(42)
+
+    random_samples = sample(waypoints, k=5)
+
+    coordinates = []
+
+    for s in random_samples:
+        s['speed'] = 30
+        coordinates.append(s)
+
+    return coordinates
