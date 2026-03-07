@@ -30,7 +30,7 @@ def main(report, use_waypoints):
 
     # Circuito em torno dos prédios
     circuito1 = {'spawnPoint': (94.498, 242.236, 23.181), 
-                 'wps': ['c1_1', 'c1_2', 'c1_3', 'c1_4', 'c1_5', 'c1_6', 'c1_7', 'c1_8', 'c1_9', 'c1_10', 'c1_11', 'c1_12']}
+                 'wps': ['c1_1', 'c1_2', 'c1_3', 'c1_4', 'c1_5', 'c1_6', 'c1_7', 'c1_8', 'c1_9', 'c1_10', 'c1_11', 'c1_12', 'c1_1']}
     
     # TODO: Circuito subindo e descendo o prédio 20
     circuito2 = {'spawnPoint': (94.498, 242.236, 23.181), 
