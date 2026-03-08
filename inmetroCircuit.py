@@ -32,12 +32,13 @@ def main(report, use_waypoints):
     circuito1 = {'spawnPoint': (94.498, 242.236, 23.181), 
                  'wps': ['c1_1', 'c1_2', 'c1_3', 'c1_4', 'c1_5', 'c1_6', 'c1_7', 'c1_8', 'c1_9', 'c1_10', 'c1_11', 'c1_12', 'c1_1']}
     
-    # TODO: Circuito subindo e descendo o prédio 20
+    # Circuito subindo e descendo o prédio 20 [c2_1 até o c2_31]
     circuito2 = {'spawnPoint': (94.498, 242.236, 23.181), 
-                 'wps': ['c1_1', 'c1_2', 'c1_3', 'c1_4', 'c1_5', 'c1_6', 'c1_7', 'c1_8', 'c1_9', 'c1_10', 'c1_11', 'c1_12']}
+                 'wps': ['c2_1', 'c2_2', 'c2_3', 'c2_4', 'c2_5', 'c2_6', 'c2_7', 'c2_8', 'c2_9', 'c2_10', 'c2_11', 'c2_12', 'c2_13', 'c2_14',]}
+    
     
     # Circuito selecionado
-    circuito = circuito1
+    circuito = circuito2
 
     # Configurando o cenário
     scenario = Scenario("inmetro", "vehicle logging")
@@ -75,9 +76,7 @@ def main(report, use_waypoints):
         vehicle.ai.drive_using_waypoints(waypoints,
         drive_in_lane=True,
         avoid_cars=True,
-        no_of_laps=2,
-        route_speed= 40 / 3.6,
-        route_speed_mode='limit')
+        no_of_laps=1,)
     else:
         vehicle.ai.set_mode('traffic')
 
