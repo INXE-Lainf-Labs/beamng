@@ -29,16 +29,16 @@ def main(report, use_waypoints):
     can_parser = CANParser(dbc_path)
 
     # Circuito em torno dos prédios
-    circuito1 = {'spawnPoint': (94.498, 242.236, 23.181), 
-                 'wps': ['c1_1', 'c1_2', 'c1_3', 'c1_4', 'c1_5', 'c1_6', 'c1_7', 'c1_8', 'c1_9', 'c1_10', 'c1_11', 'c1_12', 'c1_1']}
+    circuito1 = {'spawnPoint': (111.048, 245.349, 23.921), 
+                 'wps': ['c1_1', 'c1_2', 'c1_3', 'c1_4', 'c1_5', 'c1_6', 'c1_7', 'c1_8', 'c1_9', 'c1_10', 'c1_11', 'c1_12', 'c1_13', 'c1_1']}
     
-    # Circuito subindo e descendo o prédio 20 [c2_1 até o c2_31]
-    circuito2 = {'spawnPoint': (94.498, 242.236, 23.181), 
-                 'wps': ['c2_1', 'c2_2', 'c2_3', 'c2_4', 'c2_5', 'c2_6', 'c2_7', 'c2_8', 'c2_9', 'c2_10', 'c2_11', 'c2_12', 'c2_13', 'c2_14',]}
+    # Circuito subindo e descendo o prédio 20 [c2_1 até o c2_34]
+    circuito2 = {'spawnPoint': (111.048, 245.349, 23.921), 
+                 'wps': ['c2_1', 'c2_2', 'c2_3', 'c2_4', 'c2_5', 'c2_6', 'c2_7', 'c2_8', 'c2_9', 'c2_10', 'c2_11', 'c2_12', 'c2_13', 'c2_14', 'c2_15', 'c2_16', 'c2_17', 'c2_18', 'c2_19', 'c2_20', 'c2_21', 'c2_22', 'c2_23', 'c2_24', 'c2_25', 'c2_26', 'c2_27', 'c2_28', 'c2_29', 'c2_30', 'c2_31', 'c2_32', 'c2_33','c2_34']}
     
     
     # Circuito selecionado
-    circuito = circuito2
+    circuito = circuito1
 
     # Configurando o cenário
     scenario = Scenario("inmetro", "vehicle logging")
@@ -46,7 +46,7 @@ def main(report, use_waypoints):
     vehicle = Vehicle("ego_vehicle", model="brenoveras_hb20_premium", license="LAINF", part_config='vehicles/sbr/electric_300.pc')
     scenario.add_vehicle(
         vehicle,
-        pos=circuito['spawnPoint'], rot_quat=(0.0173, -0.0019, -0.6354, 0.7720)
+        pos=circuito['spawnPoint'], rot_quat=(0, 0, 0.675, 0.737)
     )
 
     scenario.make(beamng)
@@ -62,7 +62,7 @@ def main(report, use_waypoints):
     #beamng.pause()    
 
     # Instanciando APIs
-    trafficApi = TrafficApi(beamng)
+    #trafficApi = TrafficApi(beamng)
 
     # Instanciando e anexando sensor do veículo
     electrics = Electrics()
@@ -76,7 +76,7 @@ def main(report, use_waypoints):
         vehicle.ai.drive_using_waypoints(waypoints,
         drive_in_lane=True,
         avoid_cars=True,
-        no_of_laps=1,)
+        no_of_laps=2)
     else:
         vehicle.ai.set_mode('traffic')
 
@@ -86,7 +86,7 @@ def main(report, use_waypoints):
         beamng,
         vehicle,
         requested_update_time=0.01,
-        pos=(-0.3, 1, 2),
+        pos=(-0.3, 1, 3),
         dir=(0, -1, 0),
         field_of_view_y=70,
         near_far_planes=(0.1, 1000),

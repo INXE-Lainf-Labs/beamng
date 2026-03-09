@@ -71,7 +71,7 @@ def get_pitch(forward):
 
 def simulation_loop(bng, sim_name, vehicle, camera, features, length, can_parser, powertrain):
 
-    with open(f'./data/{sim_name}/readable.csv', 'w') as file, open(f'./data/{sim_name}/can.log', 'w') as file_can, open(f'./data/{sim_name}/can_debug.log', 'w') as can_debbug_file:
+    with open(f'./data/{sim_name}/readable.csv', 'w', newline='') as file, open(f'./data/{sim_name}/can.log', 'w') as file_can, open(f'./data/{sim_name}/can_debug.log', 'w') as can_debbug_file:
 
         # Prepara o cabeçalho da saída .csv
         cabecalho = ['time', 'step', 'angle', 'posX', 'posY', 'posZ'] + list(features.keys())
