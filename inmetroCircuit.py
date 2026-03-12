@@ -1,4 +1,5 @@
 from os import mkdir, makedirs, rmdir
+from sys import argv
 from beamngpy import BeamNGpy, Scenario, Vehicle
 from beamngpy.sensors import Electrics, Camera, PowertrainSensor
 from beamngpy.api.beamng import TrafficApi
@@ -8,6 +9,10 @@ from utils.sim_sup import get_sim_name, simulation_loop, set_bng_container_up, s
 from utils import feat_treatment
 from utils.reports import generate_report
 from beamngpy.vehicle.lka import LaneKeepingAssist
+
+# Argumentos da linha de comando
+# 1 - Velocidade máxima (int, 0 para sem limitação)
+# 2 - Tráfego ou não (0 ou 1)
 
 def main(report, use_waypoints):
 
@@ -20,7 +25,7 @@ def main(report, use_waypoints):
     mkdir(f'./data/{nome_sim}/imgs')
 
     # Instanciando o BeamNG
-    beamng = BeamNGpy(host="127.0.0.1", port=25252, home="C:\\Games\\BeamNG.tech.v0.37.6.0", user=r"c:\Users\Pichau\AppData\Local\BeamNG\BeamNG.tech")
+    beamng = BeamNGpy(host="127.0.0.1", port=25252, home="/opt/BeamNG/BeamNG.tech.v0.37.6.0/")
     beamng.open()
     print('\033[34m[INFO]\033[0m   BeamNG iniciado')
 
@@ -73,10 +78,20 @@ def main(report, use_waypoints):
 
         waypoints = circuito['wps']
 
-        vehicle.ai.drive_using_waypoints(waypoints,
-        drive_in_lane=True,
-        avoid_cars=True,
-        no_of_laps=2)
+        if argv[1] != 0:
+            vehicle.ai.drive_using_waypoints(waypoints,
+                drive_in_lane=True,
+                avoid_cars=True,
+                no_of_laps=1
+                route_speed= argv[1] / 3.6,
+                route_speed_mode='limit'
+            )
+        else:
+            vehicle.ai.drive_using_waypoints(waypoints,
+                drive_in_lane=True,
+                avoid_cars=True,
+                no_of_laps=1
+            )
     else:
         vehicle.ai.set_mode('traffic')
 
@@ -92,6 +107,17 @@ def main(report, use_waypoints):
         near_far_planes=(0.1, 1000),
         resolution=(1024, 1024)
     )
+
+    if argv[2] == 1:
+        trafficApi = TrafficApi(beamng)
+
+        # Inserindo tráfego
+        trafficApi.spawn(
+            max_amount=2,
+            police_ratio=0,
+            extra_amount=2,
+            parked_amount=10
+        )  
 
     # Colunas dos dados que serão coletados, juntamente com o seu método de tratamento
     colunas = {
