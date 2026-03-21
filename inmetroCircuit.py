@@ -36,9 +36,16 @@ def main(report, use_waypoints):
     circuito2 = {'spawnPoint': (111.048, 245.349, 23.921), 
                  'wps': ['c2_1', 'c2_2', 'c2_3', 'c2_4', 'c2_5', 'c2_6', 'c2_7', 'c2_8', 'c2_9', 'c2_10', 'c2_11', 'c2_12', 'c2_13', 'c2_14', 'c2_15', 'c2_16', 'c2_17', 'c2_18', 'c2_19', 'c2_20', 'c2_21', 'c2_22', 'c2_23', 'c2_24', 'c2_25', 'c2_26', 'c2_27', 'c2_28', 'c2_29', 'c2_30', 'c2_31', 'c2_32', 'c2_33','c2_34']}
     
+    # Circuito da DIMCI até a rotatória [c3_1 até c3_7]
+    circuito3 = {'spawnPoint': (111.048, 245.349, 23.921), 
+                 'wps': ['c3_1', 'c3_2', 'c3_3', 'c3_4', 'c3_5', 'c3_6', 'c3_7']}
+    
+    # Circuito da DIMCI até a rotatória, fazendo o caminho inverso do circuito1. Primeira parte: c3_1 até c3_6, depois c4_1 até c4_8
+    circuito4 = {'spawnPoint': (111.048, 245.349, 23.921),
+                    'wps': ['c3_1', 'c3_2', 'c3_3', 'c3_4', 'c3_5', 'c3_6', 'c4_1', 'c4_2', 'c4_3', 'c4_4', 'c4_5', 'c4_6', 'c4_7', 'c4_8']}
     
     # Circuito selecionado
-    circuito = circuito1
+    circuito = circuito4
 
     # Configurando o cenário
     scenario = Scenario("inmetro", "vehicle logging")
@@ -76,7 +83,7 @@ def main(report, use_waypoints):
         vehicle.ai.drive_using_waypoints(waypoints,
         drive_in_lane=True,
         avoid_cars=True,
-        no_of_laps=2)
+        no_of_laps=1)
     else:
         vehicle.ai.set_mode('traffic')
 
