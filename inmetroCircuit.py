@@ -1,5 +1,4 @@
 from os import mkdir, makedirs, rmdir
-from sys import argv
 from beamngpy import BeamNGpy, Scenario, Vehicle
 from beamngpy.sensors import Electrics, Camera, PowertrainSensor
 from beamngpy.api.beamng import TrafficApi
@@ -25,7 +24,7 @@ def main(report, use_waypoints):
     mkdir(f'./data/{nome_sim}/imgs')
 
     # Instanciando o BeamNG
-    beamng = BeamNGpy(host="127.0.0.1", port=25252, home="/opt/BeamNG/BeamNG.tech.v0.37.6.0/")
+    beamng = BeamNGpy(host="127.0.0.1", port=25252, home=r"C:\Games\BeamNG.tech.v0.37.6.0")
     beamng.open()
     print('\033[34m[INFO]\033[0m   BeamNG iniciado')
 
@@ -103,18 +102,7 @@ def main(report, use_waypoints):
         field_of_view_y=70,
         near_far_planes=(0.1, 1000),
         resolution=(1024, 1024)
-    )
-
-    if argv[2] == 1:
-        trafficApi = TrafficApi(beamng)
-
-        # Inserindo tráfego
-        trafficApi.spawn(
-            max_amount=2,
-            police_ratio=0,
-            extra_amount=2,
-            parked_amount=10
-        )  
+    ) 
 
     # Colunas dos dados que serão coletados, juntamente com o seu método de tratamento
     colunas = {
