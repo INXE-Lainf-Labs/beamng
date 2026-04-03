@@ -9,13 +9,8 @@ from utils import feat_treatment
 from utils.reports import generate_report
 from beamngpy.vehicle.lka import LaneKeepingAssist
 
-def main(report, use_waypoints):
+def main(report):
 
-    # Inicializa o BeamNG
-    if not set_bng_container_up():
-        return
-
-    # Nome da instância da simulação
     nome_sim = get_sim_name()
 
     # Inicializa o diretório da simulação
@@ -24,8 +19,8 @@ def main(report, use_waypoints):
     mkdir(f'./data/{nome_sim}/imgs')
 
     # Instanciando o BeamNG
-    beamng = BeamNGpy(host="127.0.0.1", port=25252)
-    beamng.open()
+    beamng = BeamNGpy(host="127.0.0.1", port=25252, home="C:\Games\BeamNG.tech.v0.37.6.0", user=r"c:\Users\Pichau\AppData\Local\BeamNG\BeamNG.tech")
+    beamng.open(launch=True)
     print('\033[34m[INFO]\033[0m   BeamNG iniciado')
 
     # Instanciando o CANParser
@@ -33,9 +28,9 @@ def main(report, use_waypoints):
     can_parser = CANParser(dbc_path)
 
     # Configurando o cenário
-    scenario = Scenario("west_coast_usa", "vehicle logging")
+    scenario = Scenario("inmetroTake3", "vehicle logging")
     
-    vehicle = Vehicle("ego_vehicle", model="sbr", license="LAINF", part_config='vehicles/sbr/electric_300.pc')
+    vehicle = Vehicle("ego_vehicle", model="brenoveras_hb20_premium", license="LAINF", part_config='vehicles/sbr/electric_300.pc')
     scenario.add_vehicle(
         vehicle,
         pos=(-769.1, 400.8, 142.8), rot_quat=(0.0173, -0.0019, -0.6354, 0.7720)
@@ -60,24 +55,6 @@ def main(report, use_waypoints):
     electrics = Electrics()
     vehicle.attach_sensor('electrics', electrics)
     powertrain = PowertrainSensor('powertrain', beamng, vehicle, is_send_immediately=True)
-    
-    if use_waypoints:
-        waypoints = get_coordinates_list()
-        vehicle.ai.drive_using_waypoints(waypoints,
-        drive_in_lane=True,
-        avoid_cars=True,
-        no_of_laps=1,
-        route_speed= 30 / 3.6,
-        route_speed_mode='limit')
-    else:
-        vehicle.ai.set_mode('traffic')
-
-    # TODO: configurar IA par operar como traffic (ex: ADAS)
-    # Fez o veículo ficar parado
-    laneAssist = LaneKeepingAssist(beamng, vehicle, electrics)
-    laneAssist.start()
-
-    vehicle.ai.set_aggression(0.3)
 
     # Configurando a câmera
     camera = Camera(
@@ -106,9 +83,13 @@ def main(report, use_waypoints):
         'brake_input': feat_treatment.ratio_to_256,
         'throttle': feat_treatment.ratio_to_256,
         'vel': feat_treatment.get_vel,
-        'outputTorque1': feat_treatment.times_1
+        #'outputTorque1': feat_treatment.times_1 (O HB20 não esse parametro)
     }
     
+    script_path = r"c:\Users\Pichau\AppData\Local\BeamNG\BeamNG.tech\current\levels\inmetrotake3\trajectory.json"
+    script = vehicle.ai.import_script_ai_file(script_path)
+    vehicle.ai.execute_script(script, True)
+
     # Looping da simulação
     simulation_loop(beamng, nome_sim, vehicle, camera, colunas, 1000000, can_parser, powertrain)
 
@@ -122,7 +103,7 @@ def main(report, use_waypoints):
     print(f"\033[34m[INFO]\033[0m  Dados salvos em {nome_sim}")
 
     # Fecha a conexão com o BeamNg
-    beamng.disconnect()
+    #beamng.close()
     print('\033[34m[INFO]\033[0m   BeamNG encerrado')
 
     if report:
@@ -130,8 +111,5 @@ def main(report, use_waypoints):
         generate_report(nome_sim)
         print('\033[34m[INFO]\033[0m   Relatório gerado')
 
-    # Derruba o contêiner do bng
-    set_bng_container_down()
-
 if __name__ == "__main__":
-    main(True, True)
+    main(True)

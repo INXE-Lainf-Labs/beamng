@@ -9,11 +9,11 @@ from utils import feat_treatment
 from utils.reports import generate_report
 from beamngpy.vehicle.lka import LaneKeepingAssist
 
-def main(report, use_waypoints):
+# Argumentos da linha de comando
+# 1 - Velocidade máxima (int, 0 para sem limitação)
+# 2 - Tráfego ou não (0 ou 1)
 
-    # Inicializa o BeamNG
-    if not set_bng_container_up():
-        return
+def main(report, use_waypoints):
 
     # Nome da instância da simulação
     nome_sim = get_sim_name()
@@ -24,7 +24,7 @@ def main(report, use_waypoints):
     mkdir(f'./data/{nome_sim}/imgs')
 
     # Instanciando o BeamNG
-    beamng = BeamNGpy(host="127.0.0.1", port=25252)
+    beamng = BeamNGpy(host="127.0.0.1", port=25252, home=r"C:\Games\BeamNG.tech.v0.37.6.0")
     beamng.open()
     print('\033[34m[INFO]\033[0m   BeamNG iniciado')
 
@@ -32,13 +32,32 @@ def main(report, use_waypoints):
     dbc_path = './dbc/byd.dbc'
     can_parser = CANParser(dbc_path)
 
-    # Configurando o cenário
-    scenario = Scenario("west_coast_usa", "vehicle logging")
+    # Circuito em torno dos prédios
+    circuito1 = {'spawnPoint': (111.048, 245.349, 23.921), 
+                 'wps': ['c1_1', 'c1_2', 'c1_3', 'c1_4', 'c1_5', 'c1_6', 'c1_7', 'c1_8', 'c1_9', 'c1_10', 'c1_11', 'c1_12', 'c1_13', 'c1_1']}
     
-    vehicle = Vehicle("ego_vehicle", model="sbr", license="LAINF", part_config='vehicles/sbr/electric_300.pc')
+    # Circuito subindo e descendo o prédio 20 [c2_1 até o c2_34]
+    circuito2 = {'spawnPoint': (111.048, 245.349, 23.921), 
+                 'wps': ['c2_1', 'c2_2', 'c2_3', 'c2_4', 'c2_5', 'c2_6', 'c2_7', 'c2_8', 'c2_9', 'c2_10', 'c2_11', 'c2_12', 'c2_13', 'c2_14', 'c2_15', 'c2_16', 'c2_17', 'c2_18', 'c2_19', 'c2_20', 'c2_21', 'c2_22', 'c2_23', 'c2_24', 'c2_25', 'c2_26', 'c2_27', 'c2_28', 'c2_29', 'c2_30', 'c2_31', 'c2_32', 'c2_33','c2_34']}
+    
+    # Circuito da DIMCI até a rotatória [c3_1 até c3_7]
+    circuito3 = {'spawnPoint': (111.048, 245.349, 23.921), 
+                 'wps': ['c3_1', 'c3_2', 'c3_3', 'c3_4', 'c3_5', 'c3_6', 'c3_7']}
+    
+    # Circuito da DIMCI até a rotatória, fazendo o caminho inverso do circuito1. Primeira parte: c3_1 até c3_6, depois c4_1 até c4_8
+    circuito4 = {'spawnPoint': (111.048, 245.349, 23.921),
+                    'wps': ['c3_1', 'c3_2', 'c3_3', 'c3_4', 'c3_5', 'c3_6', 'c4_1', 'c4_2', 'c4_3', 'c4_4', 'c4_5', 'c4_6', 'c4_7', 'c4_8']}
+    
+    # Circuito selecionado
+    circuito = circuito4
+
+    # Configurando o cenário
+    scenario = Scenario("inmetro", "vehicle logging")
+    
+    vehicle = Vehicle("ego_vehicle", model="brenoveras_hb20_premium", license="LAINF", part_config='vehicles/sbr/electric_300.pc')
     scenario.add_vehicle(
         vehicle,
-        pos=(-769.1, 400.8, 142.8), rot_quat=(0.0173, -0.0019, -0.6354, 0.7720)
+        pos=circuito['spawnPoint'], rot_quat=(0, 0, 0.675, 0.737)
     )
 
     scenario.make(beamng)
@@ -54,7 +73,7 @@ def main(report, use_waypoints):
     #beamng.pause()    
 
     # Instanciando APIs
-    trafficApi = TrafficApi(beamng)
+    #trafficApi = TrafficApi(beamng)
 
     # Instanciando e anexando sensor do veículo
     electrics = Electrics()
@@ -62,22 +81,15 @@ def main(report, use_waypoints):
     powertrain = PowertrainSensor('powertrain', beamng, vehicle, is_send_immediately=True)
     
     if use_waypoints:
-        waypoints = get_coordinates_list()
+
+        waypoints = circuito['wps']
+
         vehicle.ai.drive_using_waypoints(waypoints,
         drive_in_lane=True,
         avoid_cars=True,
-        no_of_laps=1,
-        route_speed= 30 / 3.6,
-        route_speed_mode='limit')
+        no_of_laps=1)
     else:
         vehicle.ai.set_mode('traffic')
-
-    # TODO: configurar IA par operar como traffic (ex: ADAS)
-    # Fez o veículo ficar parado
-    laneAssist = LaneKeepingAssist(beamng, vehicle, electrics)
-    laneAssist.start()
-
-    vehicle.ai.set_aggression(0.3)
 
     # Configurando a câmera
     camera = Camera(
@@ -85,20 +97,12 @@ def main(report, use_waypoints):
         beamng,
         vehicle,
         requested_update_time=0.01,
-        pos=(-0.3, 1, 2),
+        pos=(-0.3, 1, 3),
         dir=(0, -1, 0),
         field_of_view_y=70,
         near_far_planes=(0.1, 1000),
         resolution=(1024, 1024)
-    )
-    
-    # Inserindo tráfego
-    trafficApi.spawn(
-        max_amount=2,
-        police_ratio=0,
-        extra_amount=2,
-        parked_amount=10
-    )  
+    ) 
 
     # Colunas dos dados que serão coletados, juntamente com o seu método de tratamento
     colunas = {
@@ -106,9 +110,8 @@ def main(report, use_waypoints):
         'brake_input': feat_treatment.ratio_to_256,
         'throttle': feat_treatment.ratio_to_256,
         'vel': feat_treatment.get_vel,
-        'outputTorque1': feat_treatment.times_1
     }
-    
+
     # Looping da simulação
     simulation_loop(beamng, nome_sim, vehicle, camera, colunas, 1000000, can_parser, powertrain)
 
@@ -129,9 +132,6 @@ def main(report, use_waypoints):
         print('\033[34m[INFO]\033[0m   Gerando relatório do percurso')
         generate_report(nome_sim)
         print('\033[34m[INFO]\033[0m   Relatório gerado')
-
-    # Derruba o contêiner do bng
-    set_bng_container_down()
 
 if __name__ == "__main__":
     main(True, True)

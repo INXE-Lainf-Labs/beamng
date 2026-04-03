@@ -6,9 +6,11 @@ import numpy as np
 import csv
 import cv2
 import docker
+import json
 from subprocess import Popen, DEVNULL
-from random import sample
+from random import sample, seed
 from beamngpy import ScenarioObject
+from pprint import pprint
 
 def set_bng_container_up():
     """
@@ -18,13 +20,13 @@ def set_bng_container_up():
     # O bloco dentro do try especifica quando existe um conteiner do bng em execução.
     client = docker.from_env()
     try:
-        client.containers.get("beamng-erick")
+        client.containers.get("beamng-ubuntu22")
         print('\033[31m[ERRO]\033[0m   Já existe uma instância de simulação. Finalizando...')
         return False
     except docker.errors.NotFound:
         # Caso não exista, levanta o conteiner
         print('\033[34m[INFO]\033[0m   Levantando contêiner do bng...')
-        process = Popen(['docker', 'compose', 'up', 'beamng-erick'], cwd='/opt/BeamNG/BeamNG.tech.v0.36.4.0/tech/docker', stdout=DEVNULL, stderr=DEVNULL)
+        process = Popen(['docker', 'compose', 'up', 'beamng-ubuntu22'], cwd='/opt/BeamNG/BeamNG.tech.v0.37.6.0/tech/docker', stdout=DEVNULL, stderr=DEVNULL)
         
         # TODO: substituir pela verificação de status do contêiner 
         sleep(10)
@@ -37,11 +39,11 @@ def set_bng_container_down():
     """
     client = docker.from_env()
     try:
-        client.containers.get("beamng-erick")
+        client.containers.get("beamng-ubuntu22")
         print('\033[34m[INFO]\033[0m   Finalizando o contêiner')
-        Popen(['docker', 'kill', 'beamng-erick'], stdout=DEVNULL, stderr=DEVNULL)
+        Popen(['docker', 'kill', 'beamng-ubuntu22'], stdout=DEVNULL, stderr=DEVNULL)
         sleep(10)
-        Popen(['docker', 'rm', 'beamng-erick'], stdout=DEVNULL, stderr=DEVNULL)
+        Popen(['docker', 'rm', 'beamng-ubuntu22'], stdout=DEVNULL, stderr=DEVNULL)
     except docker.errors.NotFound:
         print('\033[31m[ERRO]\033[0m   Não existe uma instância da simulação. Finalizando...')
 
@@ -69,7 +71,7 @@ def get_pitch(forward):
 
 def simulation_loop(bng, sim_name, vehicle, camera, features, length, can_parser, powertrain):
 
-    with open(f'./data/{sim_name}/readable.csv', 'w') as file, open(f'./data/{sim_name}/can.log', 'w') as file_can, open(f'./data/{sim_name}/can_debug.log', 'w') as can_debbug_file:
+    with open(f'./data/{sim_name}/readable.csv', 'w', newline='') as file, open(f'./data/{sim_name}/can.log', 'w') as file_can, open(f'./data/{sim_name}/can_debug.log', 'w') as can_debbug_file:
 
         # Prepara o cabeçalho da saída .csv
         cabecalho = ['time', 'step', 'angle', 'posX', 'posY', 'posZ'] + list(features.keys())
@@ -83,11 +85,14 @@ def simulation_loop(bng, sim_name, vehicle, camera, features, length, can_parser
         try:
             print('\033[34m[INFO]\033[0m   Coletando dados')
             
+            patience = 0
+
             # Looping da simulação
             for i in range(1, length):
 
-                # Avança 50 passos da simulação
-                bng.step(15)
+                if patience > 300:
+                    print('\033[34m[INFO]\033[0m   Carro encerrou o trajeto. Finalizando...')
+                    break
 
                 leitura = []
                 leitura_can = []
@@ -96,7 +101,7 @@ def simulation_loop(bng, sim_name, vehicle, camera, features, length, can_parser
                 vehicle.sensors.poll()
         
                 # Captura um frame para montar saída
-                if i % 100 == 0:
+                if i % 10 == 0:
                     frame = camera.poll_raw()
 
                     arr = np.frombuffer(frame['colour'], dtype=np.uint8)
@@ -128,18 +133,25 @@ def simulation_loop(bng, sim_name, vehicle, camera, features, length, can_parser
                 # Incrementa a leitura com os valores de sensor do carro
                 data = vehicle.sensors['electrics'].data
                 valores = []
-                for i in features.keys():
-                    if i == 'outputTorque1':
+                for j in features.keys():
+                    if j == 'outputTorque1':
                         valores.append(powertrain.poll()['rearMotor']['outputTorque1'])
-                    elif i == 'vel':
+                    elif j == 'vel':
                         valores.append(vehicle.state['vel'])
                     else:
-                        valores.append(data[i])
+                        valores.append(data[j])
                 leitura.extend(valores)
 
                 # Faz o tratamento específico da feature
                 for i, col in enumerate(features.keys()):
                     treated_value = features[col](valores[i])
+
+                    if col == "vel":
+                        if int(treated_value) == 0:
+                            patience += 1
+                        else:
+                            patience = 0
+
                     log_line = can_parser.log(col, treated_value)
                     leitura_can.append(log_line)
                     can_debbug_file.write(f'{log_line} -> {col} : {treated_value}\n')
@@ -154,33 +166,50 @@ def simulation_loop(bng, sim_name, vehicle, camera, features, length, can_parser
         except KeyboardInterrupt:
             print('\033[33m[WARN]\033[0m   Interrompendo simulação')
 
-def get_coordinates_list(scenario, sim_name):
+def get_waypoints_list():
     """
     Função responsável por retornar o conjunto de coordenadas em que o veículo irá trafegar
     Args:
-        scenario: Objeto cenário da simulação
-        sim_name: Nome da simulação
+        coordinates: coordenadas dos pontos
     Returns:
         Lista com o nome dos waypoints do trajeto
     """
+        
+    wps = []
     
-    df = pd.read_csv(f'/opt/BeamNG/BeamNG.tech.v0.36.4.0/CANSimulation/data/{sim_name}/readable.csv', delimiter=';')
+    with open("wps/west_coast_usa.ndjson", "r", encoding="utf-8") as f:
+        for linha in f:
+            wps.append(json.loads(linha))
+
+    seed(42)
+
+    amostra = sample(wps, k=5)
+
+    amostra = [w['name'] for w in amostra]
+
+    print(amostra)
+
+    return amostra
+
+def get_coordinates_list():
+    """
+    Função responsável por retornar o conjunto de coordenadas em que o veículo irá trafegar
+    Returns:
+        Lista com as coordenadas dos waypoints do trajeto
+    """
     waypoints = []
-    
-    for index, row in df.iterrows():
-        
-        name = f'tw_{index}'
-        
-        so = ScenarioObject(
-            oid='BeamNGWaypoint',
-            name=name,
-            otype='BeamNGWaypoint',
-            pos=(row['posX'], row['posY'], row['posZ']),
-            scale=1,
-            orientation=(0, 0, 0)
-        )
-        
-        scenario.add_object(so)
-        waypoints.append(name)
-        
-    return waypoints
+    with open("wps/west_coast_usa.ndjson", "r", encoding="utf-8") as f:
+        for line in f:
+            waypoints.append(json.loads(line))
+
+    seed(42)
+
+    random_samples = sample(waypoints, k=5)
+
+    coordinates = []
+
+    for s in random_samples:
+        s['speed'] = 30
+        coordinates.append(s)
+
+    return coordinates
