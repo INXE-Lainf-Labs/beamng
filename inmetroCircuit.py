@@ -87,7 +87,9 @@ def main(report, use_waypoints):
         vehicle.ai.drive_using_waypoints(waypoints,
         drive_in_lane=True,
         avoid_cars=True,
-        no_of_laps=1)
+        no_of_laps=1,
+        route_speed_mode='limit',
+        route_speed=10)
     else:
         vehicle.ai.set_mode('traffic')
 
