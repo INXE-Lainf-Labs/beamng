@@ -90,7 +90,7 @@ def simulation_loop(bng, sim_name, vehicle, camera, features, length, can_parser
             # Looping da simulação
             for i in range(1, length):
 
-                if patience > 300:
+                if patience > 10:
                     print('\033[34m[INFO]\033[0m   Carro encerrou o trajeto. Finalizando...')
                     break
 
@@ -162,6 +162,8 @@ def simulation_loop(bng, sim_name, vehicle, camera, features, length, can_parser
                 # Escreve no arquivo CAN
                 for leitura in leitura_can:
                     file_can.write(f'{leitura}\n')
+
+                sleep(1.0)
 
         except KeyboardInterrupt:
             print('\033[33m[WARN]\033[0m   Interrompendo simulação')
