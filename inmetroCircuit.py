@@ -49,7 +49,7 @@ def main(report, use_waypoints):
                     'wps': ['c3_1', 'c3_2', 'c3_3', 'c3_4', 'c3_5', 'c3_6', 'c4_1', 'c4_2', 'c4_3', 'c4_4', 'c4_5', 'c4_6', 'c4_7', 'c4_8']}
     
     # Circuito selecionado
-    circuito = circuito4
+    circuito = circuito1
 
     # Configurando o cenário
     scenario = Scenario("inmetro", "vehicle logging")
@@ -89,9 +89,11 @@ def main(report, use_waypoints):
         avoid_cars=True,
         no_of_laps=1,
         route_speed_mode='limit',
-        route_speed=10)
+        route_speed=12)
     else:
         vehicle.ai.set_mode('traffic')
+
+    vehicle.ai.set_aggression(0.3)
 
     # Configurando a câmera
     camera = Camera(
