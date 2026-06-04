@@ -176,10 +176,11 @@ def simulation_loop(bng, sim_name, vehicle, camera, features, can_parser, powert
                     treatment_func = getattr(feat_treatment, features[col])
                     treated_value = treatment_func(valores[i])
                     
-                    if col == "vel" and int(treated_value) == 0:
-                        patience += 1
-                    else:
-                        patience = 0
+                    if col == "vel":
+                        if int(treated_value) == 0:
+                            patience += 1
+                        else:
+                            patience = 0
                     
                     log_line = can_parser.log(col, treated_value)
                     leitura_can.append(log_line)
