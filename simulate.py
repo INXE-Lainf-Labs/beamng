@@ -15,7 +15,11 @@ import config
 
 def run_simulation(circuit='c1', speed=None, laps=None, use_container=False, enable_report=False, enable_traffic=False, vehicle_model='hb20', repetitions=1):
     """Execute simulation with given parameters"""
-    
+
+    # Convertendo km/h para m/s
+        if speed is not None:
+            speed = speed / 3.6
+
     for rep in range(repetitions):
         print(f"\n{'='*60}")
         if repetitions > 1:
@@ -29,6 +33,10 @@ def run_simulation(circuit='c1', speed=None, laps=None, use_container=False, ena
         if use_container and not set_bng_container_up():
             return False
         
+        # Convertendo km/h para m/s
+        if speed is not None:
+            speed = speed / 3.6
+
         # Simulation name
         nome_sim = get_sim_name()
         
