@@ -10,6 +10,6 @@ echo "PID do bash script: $$"
 echo "Starting job..."
 
 source .venv/bin/activate 
-python cansim.py
+python simulate.py --circuit c1 --speed 12 --report
 
 echo "Finishing job..."
