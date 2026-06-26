@@ -17,8 +17,8 @@ def run_simulation(circuit='c1', speed=None, laps=None, use_container=False, ena
     """Execute simulation with given parameters"""
 
     # Convertendo km/h para m/s
-        if speed is not None:
-            speed = speed / 3.6
+    if speed is not None:
+        speed = speed / 3.6
 
     for rep in range(repetitions):
         print(f"\n{'='*60}")
