@@ -1,5 +1,0 @@
-Métodos aplicados durante a validação
-    - Pitágoras para distância acumulada na validação, com o fim de estimar o odômetro
-    - Normalização para eliminação das medidas
-    - Uso das posições cartesianas como simulação das coordenadas geográficas
-    - TOTS e ttest como teste de hipótese iniciais
