@@ -16,10 +16,6 @@ import config
 def run_simulation(circuit='c1', speed=None, laps=None, use_container=False, enable_report=False, enable_traffic=False, vehicle_model='hb20', repetitions=1):
     """Execute simulation with given parameters"""
 
-    # Convertendo km/h para m/s
-    if speed is not None:
-        speed = speed / 3.6
-
     for rep in range(repetitions):
         print(f"\n{'='*60}")
         if repetitions > 1:
@@ -28,6 +24,10 @@ def run_simulation(circuit='c1', speed=None, laps=None, use_container=False, ena
         print(f"Velocidade: {speed or config.DEFAULT_SPEED} km/h | Voltas: {laps or config.DEFAULT_LAPS}")
         print(f"Tráfego: {'Ativado' if enable_traffic else 'Desativado'}")
         print(f"{'='*60}\n")
+
+        # Convertendo km/h para m/s
+        if speed is not None:
+            speed = speed / 3.6
         
         # Container setup
         if use_container and not set_bng_container_up():
