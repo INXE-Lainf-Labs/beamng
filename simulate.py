@@ -13,7 +13,7 @@ from utils import feat_treatment
 import config
 
 
-def run_simulation(circuit='c1', speed=None, laps=None, use_container=False, enable_report=False, enable_traffic=False, vehicle_model='hb20', repetitions=1, route_speed_mode='limit'):
+def run_simulation(circuit='c1', speed=None, laps=None, use_container=False, enable_report=False, enable_traffic=False, vehicle_model='hb20', repetitions=1, route_speed_mode='limit', drive_mode='waypoints'):
     """Execute simulation with given parameters"""
 
     for rep in range(repetitions):
@@ -52,7 +52,7 @@ def run_simulation(circuit='c1', speed=None, laps=None, use_container=False, ena
             
             # Setup simulation
             vehicle, camera, electrics, powertrain = setup_simulation(
-                beamng, circuit, vehicle_model, enable_traffic, 'waypoints', speed, laps, route_speed_mode
+                beamng, circuit, vehicle_model, enable_traffic, drive_mode, speed, laps, route_speed_mode
             )
             
             # Build feature columns
@@ -136,6 +136,9 @@ Exemplos de uso:
     parser.add_argument('--route-speed-mode', '-rs', choices=config.ROUTE_SPEED_MODES, default=config.DEFAULT_ROUTE_SPEED_MODE,
                         help=f'Modo de velocidade da rota (padrão: {config.DEFAULT_ROUTE_SPEED_MODE})')
     
+    parser.add_argument('--drive-mode', '-dm', choices=config.DRIVE_MODES, default=config.DEFAULT_DRIVE_MODE,
+                        help=f'Modo de condução (padrão: {config.DEFAULT_DRIVE_MODE})')
+    
     args = parser.parse_args()
     
     success = run_simulation(
@@ -147,7 +150,8 @@ Exemplos de uso:
         enable_traffic=args.traffic,
         vehicle_model=args.model,
         repetitions=args.repetitions,
-        route_speed_mode=args.route_speed_mode
+        route_speed_mode=args.route_speed_mode,
+        drive_mode=args.drive_mode
     )
     
     sys.exit(0 if success else 1)

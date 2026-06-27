@@ -86,3 +86,6 @@ DEFAULT_ROUTE_SPEED_MODE = 'limit'
 DETERMINISTIC_FPS = 60
 VIDEO_FPS = 10
 VIDEO_CODEC = "mp4v"
+
+DRIVE_MODES = ['waypoints', 'traffic', 'manual']
+DEFAULT_DRIVE_MODE = 'waypoints'

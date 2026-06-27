@@ -118,8 +118,9 @@ def setup_simulation(beamng, circuit_key, vehicle_model='hb20', enable_traffic=F
             route_speed=speed,
             route_speed_mode=route_speed_mode
         )
-    else:
+    elif drive_mode == 'traffic':
         vehicle.ai.set_mode('traffic')
+
     
     return vehicle, camera, electrics, powertrain
 
