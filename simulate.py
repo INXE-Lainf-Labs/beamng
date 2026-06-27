@@ -13,7 +13,7 @@ from utils import feat_treatment
 import config
 
 
-def run_simulation(circuit='c1', speed=None, laps=None, use_container=False, enable_report=False, enable_traffic=False, vehicle_model='hb20', repetitions=1):
+def run_simulation(circuit='c1', speed=None, laps=None, use_container=False, enable_report=False, enable_traffic=False, vehicle_model='hb20', repetitions=1, route_speed_mode='limit'):
     """Execute simulation with given parameters"""
 
     for rep in range(repetitions):
@@ -24,10 +24,6 @@ def run_simulation(circuit='c1', speed=None, laps=None, use_container=False, ena
         print(f"Velocidade: {speed or config.DEFAULT_SPEED} km/h | Voltas: {laps or config.DEFAULT_LAPS}")
         print(f"Tráfego: {'Ativado' if enable_traffic else 'Desativado'}")
         print(f"{'='*60}\n")
-
-        # Convertendo km/h para m/s
-        if speed is not None:
-            speed = speed / 3.6
         
         # Container setup
         if use_container and not set_bng_container_up():
@@ -56,7 +52,7 @@ def run_simulation(circuit='c1', speed=None, laps=None, use_container=False, ena
             
             # Setup simulation
             vehicle, camera, electrics, powertrain = setup_simulation(
-                beamng, circuit, vehicle_model, enable_traffic, 'waypoints', speed, laps
+                beamng, circuit, vehicle_model, enable_traffic, 'waypoints', speed, laps, route_speed_mode
             )
             
             # Build feature columns
@@ -137,6 +133,9 @@ Exemplos de uso:
     parser.add_argument('--model', '-m', choices=config.VEHICLE_MODELS.keys(), default=config.DEFAULT_MODEL,
                         help=f'Modelo do veículo (padrão: {config.DEFAULT_MODEL})')
     
+    parser.add_argument('--route-speed-mode', '-rs', choices=config.ROUTE_SPEED_MODES, default=config.DEFAULT_ROUTE_SPEED_MODE,
+                        help=f'Modo de velocidade da rota (padrão: {config.DEFAULT_ROUTE_SPEED_MODE})')
+    
     args = parser.parse_args()
     
     success = run_simulation(
@@ -147,7 +146,8 @@ Exemplos de uso:
         enable_report=args.report,
         enable_traffic=args.traffic,
         vehicle_model=args.model,
-        repetitions=args.repetitions
+        repetitions=args.repetitions,
+        route_speed_mode=args.route_speed_mode
     )
     
     sys.exit(0 if success else 1)

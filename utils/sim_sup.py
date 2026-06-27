@@ -54,7 +54,7 @@ def get_pitch(forward):
     return degrees(atan2(fz, proj_length))
 
 
-def setup_simulation(beamng, circuit_key, vehicle_model='hb20', enable_traffic=False, drive_mode='waypoints', speed=None, laps=None):
+def setup_simulation(beamng, circuit_key, vehicle_model='hb20', enable_traffic=False, drive_mode='waypoints', speed=None, laps=None, route_speed_mode='limit'):
     """
     Configura cenário, veículo e sensores
     
@@ -116,7 +116,7 @@ def setup_simulation(beamng, circuit_key, vehicle_model='hb20', enable_traffic=F
             avoid_cars=True,
             no_of_laps=laps,
             route_speed=speed,
-            route_speed_mode='limit'
+            route_speed_mode=route_speed_mode
         )
     else:
         vehicle.ai.set_mode('traffic')

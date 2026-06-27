@@ -79,6 +79,9 @@ TRAFFIC_CONFIG = {
     'parked_amount': 10
 }
 
+ROUTE_SPEED_MODES = ['limit', 'set']
+DEFAULT_ROUTE_SPEED_MODE = 'limit'
+
 # Determinismo
 DETERMINISTIC_FPS = 60
 VIDEO_FPS = 10
