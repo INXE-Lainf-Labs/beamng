@@ -54,7 +54,7 @@ def get_pitch(forward):
     return degrees(atan2(fz, proj_length))
 
 
-def setup_simulation(beamng, circuit_key, vehicle_model='hb20', enable_traffic=False, drive_mode='waypoints', speed=None, laps=None, route_speed_mode='limit'):
+def setup_simulation(beamng, circuit_key, vehicle_model='hb20', enable_traffic=False, drive_mode='waypoints', speed=None, laps=None, route_speed_mode='limit', aggression=None):
     """
     Configura cenário, veículo e sensores
     
@@ -66,6 +66,7 @@ def setup_simulation(beamng, circuit_key, vehicle_model='hb20', enable_traffic=F
         drive_mode: 'waypoints' ou 'traffic'
         speed: velocidade do AI (km/h)
         laps: número de voltas
+        aggression: nível de agressividade do AI (default: None, usa config.DEFAULT_AGGRESSION)
     """
     circuit = config.CIRCUITS[circuit_key]
     vehicle_cfg = config.VEHICLE_MODELS[vehicle_model]
@@ -105,7 +106,9 @@ def setup_simulation(beamng, circuit_key, vehicle_model='hb20', enable_traffic=F
         traffic_api.spawn(**config.TRAFFIC_CONFIG)
     
     # Modo de direção
-    vehicle.ai.set_aggression(config.DEFAULT_AGGRESSION)
+    if aggression is None:
+        aggression = config.DEFAULT_AGGRESSION
+    vehicle.ai.set_aggression(aggression)
     
     if drive_mode == 'waypoints':
         speed = speed or config.DEFAULT_SPEED
