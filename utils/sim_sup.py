@@ -125,16 +125,31 @@ def setup_simulation(beamng, circuit_key, vehicle_model='hb20', enable_traffic=F
     return vehicle, camera, electrics, powertrain
 
 
-def simulation_loop(bng, sim_name, vehicle, camera, features, can_parser, powertrain):
+def simulation_loop(bng, sim_name, vehicle, camera, features, can_parser, powertrain, only_csv=False):
     """Loop principal de coleta de dados"""
     
     from utils import feat_treatment
+    from contextlib import ExitStack
     
-    with open(f'./data/{sim_name}/readable.csv', 'w', newline='') as file, \
-         open(f'./data/{sim_name}/can.log', 'w') as file_can, \
-         open(f'./data/{sim_name}/can_debug.log', 'w') as can_debbug_file:
+    with ExitStack() as stack:
+        file = stack.enter_context(open(f'./data/{sim_name}/readable.csv', 'w', newline=''))
         
-        header = ['time', 'step', 'angle', 'posX', 'posY', 'posZ'] + list(features.keys())
+        if not only_csv:
+            file_can = stack.enter_context(open(f'./data/{sim_name}/can.log', 'w'))
+            can_debbug_file = stack.enter_context(open(f'./data/{sim_name}/can_debug.log', 'w'))
+        
+        # Atualizar sensores uma vez para identificar colunas disponíveis no electrics
+        vehicle.sensors.poll()
+        electrics_data = vehicle.sensors['electrics'].data
+        
+        base_features = list(features.keys())
+        if only_csv:
+            extra_keys = sorted([k for k in electrics_data.keys() if k not in base_features])
+            all_features = base_features + extra_keys
+        else:
+            all_features = base_features
+            
+        header = ['time', 'step', 'angle', 'posX', 'posY', 'posZ'] + all_features
         writer = csv.writer(file, delimiter=';')
         writer.writerow(header)
         
@@ -159,37 +174,48 @@ def simulation_loop(bng, sim_name, vehicle, camera, features, can_parser, powert
                     print(f'\033[32m[SIMU]\033[0m  step {i}')
                 
                 leitura = [time(), i, get_pitch(vehicle.state['dir'])] + list(vehicle.state['pos'])
-                leitura_can = []
                 
                 data = vehicle.sensors['electrics'].data
                 valores = []
-                for j in features.keys():
+                for j in all_features:
                     if j == 'outputTorque1':
                         valores.append(powertrain.poll()['rearMotor']['outputTorque1'])
                     elif j == 'vel':
                         valores.append(vehicle.state['vel'])
-                    else:
+                    elif j in data:
                         valores.append(data[j])
+                    else:
+                        valores.append(None)
                 
                 leitura.extend(valores)
                 
-                for i, col in enumerate(features.keys()):
-                    treatment_func = getattr(feat_treatment, features[col])
-                    treated_value = treatment_func(valores[i])
+                # Controle de paciência
+                vel_idx = all_features.index('vel') if 'vel' in all_features else -1
+                if vel_idx != -1:
+                    raw_vel = valores[vel_idx]
+                    speed_kmh = feat_treatment.get_vel(raw_vel) if isinstance(raw_vel, (list, tuple, np.ndarray)) else raw_vel * 3.6
+                else:
+                    speed_kmh = feat_treatment.get_vel(vehicle.state['vel'])
+                
+                if int(speed_kmh) == 0:
+                    patience += 1
+                else:
+                    patience = 0
+                
+                if not only_csv:
+                    leitura_can = []
+                    for idx, col in enumerate(base_features):
+                        treatment_func = getattr(feat_treatment, features[col])
+                        treated_value = treatment_func(valores[idx])
+                        
+                        log_line = can_parser.log(col, treated_value)
+                        leitura_can.append(log_line)
+                        can_debbug_file.write(f'{log_line} -> {col} : {treated_value}\n')
                     
-                    if col == "vel":
-                        if int(treated_value) == 0:
-                            patience += 1
-                        else:
-                            patience = 0
-                    
-                    log_line = can_parser.log(col, treated_value)
-                    leitura_can.append(log_line)
-                    can_debbug_file.write(f'{log_line} -> {col} : {treated_value}\n')
+                    for l_can in leitura_can:
+                        file_can.write(f'{l_can}\n')
                 
                 writer.writerow(leitura)
-                for leitura in leitura_can:
-                    file_can.write(f'{leitura}\n')
                 
                 sleep(config.SIM_STEP_SLEEP)
         

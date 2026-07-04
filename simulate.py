@@ -13,7 +13,7 @@ from utils import feat_treatment
 import config
 
 
-def run_simulation(circuit='c1', speed=None, laps=None, use_container=False, enable_report=False, enable_traffic=False, vehicle_model='hb20', repetitions=1, route_speed_mode='limit', drive_mode='waypoints'):
+def run_simulation(circuit='c1', speed=None, laps=None, use_container=False, enable_report=False, enable_traffic=False, vehicle_model='hb20', repetitions=1, route_speed_mode='limit', drive_mode='waypoints', only_csv=False):
     """Execute simulation with given parameters"""
 
     for rep in range(repetitions):
@@ -48,7 +48,10 @@ def run_simulation(circuit='c1', speed=None, laps=None, use_container=False, ena
             print('\033[34m[INFO]\033[0m   BeamNG iniciado')
             
             # Initialize CAN parser
-            can_parser = CANParser(config.DBC_FILE)
+            if not only_csv:
+                can_parser = CANParser(config.DBC_FILE)
+            else:
+                can_parser = None
             
             # Setup simulation
             vehicle, camera, electrics, powertrain = setup_simulation(
@@ -61,7 +64,7 @@ def run_simulation(circuit='c1', speed=None, laps=None, use_container=False, ena
                 features[col] = treatment
             
             # Run simulation loop
-            simulation_loop(beamng, nome_sim, vehicle, camera, features, can_parser, powertrain)
+            simulation_loop(beamng, nome_sim, vehicle, camera, features, can_parser, powertrain, only_csv=only_csv)
             
             # Generate video
             print('\033[34m[INFO]\033[0m   Montando vídeo')
@@ -139,6 +142,9 @@ Exemplos de uso:
     parser.add_argument('--drive-mode', '-dm', choices=config.DRIVE_MODES, default=config.DEFAULT_DRIVE_MODE,
                         help=f'Modo de condução (padrão: {config.DEFAULT_DRIVE_MODE})')
     
+    parser.add_argument('--only-csv', action='store_true',
+                        help='Desativa o log CAN e coleta o maior número de variáveis do electrics no CSV')
+    
     args = parser.parse_args()
     
     success = run_simulation(
@@ -151,7 +157,8 @@ Exemplos de uso:
         vehicle_model=args.model,
         repetitions=args.repetitions,
         route_speed_mode=args.route_speed_mode,
-        drive_mode=args.drive_mode
+        drive_mode=args.drive_mode,
+        only_csv=args.only_csv
     )
     
     sys.exit(0 if success else 1)
